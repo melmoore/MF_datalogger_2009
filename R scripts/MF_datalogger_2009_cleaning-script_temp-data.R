@@ -305,8 +305,70 @@ maxsddate.plot<-ggplot(dmaxmn, aes(x=date, y=max.sd2))
 maxsddate.plot+geom_point(
 )+geom_line()
 
+#create small dataframe with date and maxsd2 (+mn temp) to plot along side max mn temp
+maxsd2.pos<-dsdmn[,c("mn.sd2.pos", "date")]
+
+#rename mn.sd2.pos to temp so it will plot on same axis
+maxsd2.pos<-rename(maxsd2.pos, temp=mn.sd2.pos)
+
+
+#plot max mn temp and max sd2 together
+
+maxmnsd.plot<-ggplot(dmaxmn, aes(x=date, y=temp))
+maxmnsd.plot+geom_point(
+)+geom_line(
+)+geom_point(data=maxsd2.pos, aes(x=date, y=temp),
+             color="red"
+)+geom_line(data=maxsd2.pos, aes(x=date, y=temp),
+            color="red"
+)+labs(y="daily max mean temp")
+
+
+
+#plotting maxmn with sd2 at that time point
+
+#making small dataframe with sd2 at maxmn temp
+maxmnt.sd2.pos<-dmaxmn[,c("date", "mn.sd2.pos")]
+
+#rename sd2 column temp so that it plots on y axis
+maxmnt.sd2.pos<-rename(maxmnt.sd2.pos, temp=mn.sd2.pos)
+
+#plot max mn temp wth the sd2 at that time point
+maxmnsd.plot2<-ggplot(dmaxmn, aes(x=date, y=temp))
+maxmnsd.plot2+geom_point(
+)+geom_line(
+)+geom_point(data=maxmnt.sd2.pos, aes(x=date, y=temp),
+             color="red"
+)+geom_line(data=maxmnt.sd2.pos, aes(x=date, y=temp),
+            color="red"
+)+labs(y="daily max mean temp")
 
 
 
 
+#plotting just the max sd2 and the sd2 at the max mn temp (not added to mn temp)
+
+#creating dataframes with just max sd2 and date, and just sd2 and date
+maxsd<-dmaxmn[,c("date", "max.sd2")]
+mnsd<-dmaxmn[,c("date", "sd2")]
+
+#renaming both to sd to plot on same axis
+maxsd<-rename(maxsd, sd=max.sd2)
+mnsd<-rename(mnsd, sd=sd2)
+
+
+#plot them against date
+
+maxsd.plot<-ggplot(maxsd, aes(x=date, y=sd))
+maxsd.plot+geom_point(color="red"
+)+geom_line(color="red"
+)+geom_point(data=mnsd, aes(x=date, y=sd),
+             color="blue"
+)+geom_line(data=mnsd, aes(x=date, y=sd),
+            color="blue")
+
+
+sdvsd.plot<-ggplot(dmaxmn, aes(x=max.sd2, y=sd2))
+sdvsd.plot+geom_point(
+)+geom_smooth(method=lm)
 
