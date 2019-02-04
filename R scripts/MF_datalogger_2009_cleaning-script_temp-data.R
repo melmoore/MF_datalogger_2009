@@ -9,8 +9,7 @@ library(Rmisc)
 library(dplyr)
 library(viridis)
 library(cowplot)
-library(extrafont)
-
+library(forecast)
 
 #---------------------
 
@@ -304,6 +303,36 @@ maxmndate.plot+geom_point(
 maxsddate.plot<-ggplot(dmaxmn, aes(x=date, y=max.sd2))
 maxsddate.plot+geom_point(
 )+geom_line()
+
+
+#----------------------
+
+#LOOKING AT AUTOCORRELATION OF RESIDUALS FOR DAILY MAX MEAN TEMPS
+
+#subsetting data to only summer (june-august)
+dmxmn_summer<-subset(dmaxmn, month!="september" & month!="october")
+
+#running linear model of temp by date (both terms are numeric)
+dmxmn.mod1<-lm(temp~date, 
+               data = dmxmn_summer,
+               na.action = na.omit)
+
+anova(dmxmn.mod1)
+
+#storing residuals in an object
+dmxmn.res<-dmxmn.mod1$residuals
+
+
+#running residuals in acf function
+
+acf(dmxmn.res, type = "correlation", plot = TRUE)
+
+Acf(dmxmn.res, type = "correlation", plot = TRUE)
+
+
+#-------------------------------------
+
+#EXTRA PLOTS
 
 #create small dataframe with date and maxsd2 (+mn temp) to plot along side max mn temp
 maxsd2.pos<-dsdmn[,c("mn.sd2.pos", "date")]
