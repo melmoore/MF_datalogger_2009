@@ -310,7 +310,9 @@ maxsddate.plot+geom_point(
 
 #LOOKING AT AUTOCORRELATION OF RESIDUALS FOR DAILY MAX MEAN TEMPS
 
-#subsetting data to only summer (june-august)
+#MEAN DATA FROM ALL TC
+
+#subsetting mean data to only summer (june-august)
 dmxmn_summer<-subset(dmaxmn, month!="september" & month!="october")
 
 #running linear model of temp by date (both terms are numeric)
@@ -323,12 +325,73 @@ anova(dmxmn.mod1)
 #storing residuals in an object
 dmxmn.res<-dmxmn.mod1$residuals
 
-
 #running residuals in acf function
-
 acf(dmxmn.res, type = "correlation", plot = TRUE)
 
-Acf(dmxmn.res, type = "correlation", plot = TRUE)
+
+
+#Running model with mean data with date as a quadratic term
+  ##Doesn't seem to change much, either in model or in ACF plot
+dmxmn.mod2<-lm(temp~I(date^2), 
+               data = dmxmn_summer,
+               na.action = na.omit)
+
+anova(dmxmn.mod2)
+
+
+#storing residuals in an object
+dmxmn2.res<-dmxmn.mod2$residuals
+
+#running residuals in acf function
+acf(dmxmn2.res, type = "correlation", plot = TRUE)
+
+
+
+
+#RAW DATA FOR ALL TC
+
+#subset raw data to only summer months
+plc.smr<-subset(plc, month!="september" & month!="october")
+
+#group by date and thermocouple, then find the top value of temp for each combo
+smr.dmaxraw <- plc.smr %>% group_by(date.j, tc) %>% top_n(1, temp)
+
+#running linear model of temp by date (both terms are numeric)
+dmxraw.mod1<-lm(temp~date.j, 
+               data = smr.dmaxraw,
+               na.action = na.omit)
+
+anova(dmxraw.mod1)
+
+
+#storing residuals in an object
+dmxraw.res<-dmxraw.mod1$residuals
+
+
+#running residuals in acf function
+acf(dmxraw.res, type = "correlation", plot = TRUE)
+
+
+
+
+#Modelling raw data with date.j as a quadratic term
+  ##Doesn't seem to change much, either in model or in ACF plot
+dmxraw.mod2<-lm(temp~I(date.j^2), 
+                data = smr.dmaxraw,
+                na.action = na.omit)
+
+anova(dmxraw.mod2)
+
+
+#storing residuals in an object
+dmxraw2.res<-dmxraw.mod2$residuals
+
+
+#running residuals in acf function
+acf(dmxraw2.res, type = "correlation", plot = TRUE)
+
+
+
 
 
 #-------------------------------------
