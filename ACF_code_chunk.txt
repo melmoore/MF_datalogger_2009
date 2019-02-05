@@ -1,0 +1,49 @@
+#LOOKING AT AUTOCORRELATION OF RESIDUALS FOR DAILY MAX MEAN TEMPS
+
+#MEAN DATA FROM ALL TC
+
+#subsetting mean data to only summer (june-august)
+dmxmn_summer<-subset(dmaxmn, month!="september" & month!="october")
+
+#running linear model of temp by date (both terms are numeric)
+dmxmn.mod1<-lm(temp~date, 
+               data = dmxmn_summer,
+               na.action = na.omit)
+
+anova(dmxmn.mod1)
+
+#storing residuals in an object
+dmxmn.res<-dmxmn.mod1$residuals
+
+
+#running residuals in acf function
+
+acf(dmxmn.res, type = "correlation", plot = TRUE)
+
+
+
+
+#RAW DATA FOR ALL TC
+
+#subset raw data to only summer months
+plc.smr<-subset(plc, month!="september" & month!="october")
+
+#group by date and thermocouple, then find the top value of temp for each combo
+smr.dmaxraw <- plc.smr %>% group_by(date.j, tc) %>% top_n(1, temp)
+
+#running linear model of temp by date (both terms are numeric)
+dmxraw.mod1<-lm(temp~date.j, 
+               data = smr.dmaxraw,
+               na.action = na.omit)
+
+anova(dmxraw.mod1)
+
+
+#storing residuals in an object
+dmxraw.res<-dmxraw.mod1$residuals
+
+
+
+#running residuals in acf function
+
+acf(dmxraw.res, type = "correlation", plot = TRUE)
