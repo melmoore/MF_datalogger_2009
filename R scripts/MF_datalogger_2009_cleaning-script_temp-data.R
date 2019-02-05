@@ -53,34 +53,7 @@ tpsum<-summarySE(plc, measurevar = "temp",
                  na.rm = TRUE)
 head(tpsum)
 
-#create columns with mean +/- 2 standard deviations
-tpsum$sd2<-(tpsum$sd * 2)
-tpsum$mn.sd2.pos<-(tpsum$temp+tpsum$sd2)
-tpsum$mn.sd2.neg<-tpsum$temp-tpsum$sd2
-
-
-#create dataframe of the 2 sd with columns named "temp" so I can add it to plot
-tpsum.sd2.pos<-tpsum[, c("mn.sd2.pos", "date.time.j")]
-tpsum.sd2.pos<-rename(tpsum.sd2.pos, temp=mn.sd2.pos)
-
-tpsum.sd2.neg<-tpsum[, c("mn.sd2.neg", "date.time.j")]
-tpsum.sd2.neg<-rename(tpsum.sd2.neg, temp=mn.sd2.neg)
-
-#plot mean and 2 standard deviations above and below
-mnsd.plot<-ggplot(tpsum, aes(x=date.time.j, y=temp))
-mnsd.plot+geom_line(color="black"
-)+geom_line(data=tpsum.sd2.neg, aes(x=date.time.j, y=temp),
-            color="blue"
-)+geom_line(data=tpsum.sd2.pos, aes(x=date.time.j, y=temp),
-            color="red")
-
 #Dividing into smaller chunks of time so data can be examined more closely
-
-range(plc$date.time.j)
-
-
-
-#mean data frame
 tpsum$month<-ifelse(tpsum$date.time.j<152, "may",
                     ifelse(tpsum$date.time.j>=152 & tpsum$date.time.j<182, "june",
                            ifelse(tpsum$date.time.j>=182 & tpsum$date.time.j<213, "july",
@@ -91,6 +64,12 @@ tpsum$month<-ifelse(tpsum$date.time.j<152, "may",
 View(tpsum)
 
 
+#create columns with mean +/- 2 standard deviations
+tpsum$sd2<-(tpsum$sd * 2)
+tpsum$mn.sd2.pos<-(tpsum$temp+tpsum$sd2)
+tpsum$mn.sd2.neg<-tpsum$temp-tpsum$sd2
+
+
 #create dataframe of the 2 sd with columns named "temp" so I can add it to plot
 tpsum.sd2.pos<-tpsum[, c("mn.sd2.pos", "date.time.j", "month")]
 tpsum.sd2.pos<-rename(tpsum.sd2.pos, temp=mn.sd2.pos)
@@ -99,13 +78,35 @@ tpsum.sd2.neg<-tpsum[, c("mn.sd2.neg", "date.time.j", "month")]
 tpsum.sd2.neg<-rename(tpsum.sd2.neg, temp=mn.sd2.neg)
 
 
+#plot mean and 2 standard deviations above and below
+mnsd.plot<-ggplot(tpsum, aes(x=date.time.j, y=temp))
+mnsd.plot+geom_line(color="black"
+)+geom_line(data=tpsum.sd2.neg, aes(x=date.time.j, y=temp),
+            color="blue"
+)+geom_line(data=tpsum.sd2.pos, aes(x=date.time.j, y=temp),
+            color="red")
+
+
+
+
+#subsetting to only summer months (june-aug)
+
+smr.tpsum<-subset(tpsum, month!="september" & month!="october")
+smr.sd2.pos<-subset(tpsum.sd2.pos, month!="september" & month!="october")
+smr.sd2.neg<-subset(tpsum.sd2.neg, month!="september" & month!="october")
+
+
+#plotting mean +/- 2SD for summer months only
+smr.mnsd.plot<-ggplot(smr.tpsum, aes(x=date.time.j, y=temp))
+smr.mnsd.plot+geom_line(color="black"
+)+geom_line(data=smr.sd2.neg, aes(x=date.time.j, y=temp),
+            color="blue"
+)+geom_line(data=smr.sd2.pos, aes(x=date.time.j, y=temp),
+            color="red")
+
+
 
 #creating data frames that only have data from each month
-
-may<-subset(tpsum, month=="may")
-may.sd2.pos<-subset(tpsum.sd2.pos, month=="may")
-may.sd2.neg<-subset(tpsum.sd2.neg, month=="may")
-
 june<-subset(tpsum, month=="june")
 june.sd2.pos<-subset(tpsum.sd2.pos, month=="june")
 june.sd2.neg<-subset(tpsum.sd2.neg, month=="june")
