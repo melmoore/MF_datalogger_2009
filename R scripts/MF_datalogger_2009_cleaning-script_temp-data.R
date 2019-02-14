@@ -128,6 +128,34 @@ smrpos.sdmnmax.plot+geom_point(
 )+geom_smooth(method=lm)
 
 
+#plotting time of day of daily max mean temp for different positions
+dmaxmn.pos$time<-as.numeric(dmaxmn.pos$time)
+
+#exclude timepoints with daily max temp at 0 (these don't really make sense--error?)
+dmaxmn.pos.ex<-subset(dmaxmn.pos, time>.25)
+
+tod.plot<-ggplot(dmaxmn.pos.ex, aes(x=time, y=temp, group=pos, color=pos))
+tod.plot+geom_point(
+)+geom_smooth(method=lm, se=FALSE)
+
+
+#trying a boxplot
+tod.boxplot<-ggplot(dmaxmn.pos.ex, aes(x=pos, y=time, fill=pos))
+tod.boxplot+geom_boxplot()
+
+
+#plotting daily max mean against date
+dmaxmn.date.plot<-ggplot(dmaxmn.pos, aes(x=date, y=temp, group=pos, color=pos))
+dmaxmn.date.plot+geom_point(
+)+geom_line()
+
+
+#plotting daily max SD against date
+dmaxsd.date.plot<-ggplot(dsdmn.pos, aes(x=date, y=sd2, group=pos, color=pos))
+dmaxsd.date.plot+geom_point(
+)+geom_line()
+
+
 
 #-----------------------
 
