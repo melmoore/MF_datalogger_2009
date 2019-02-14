@@ -35,13 +35,98 @@ plc<-subset(plc, month!="may")
 #Finding averages at each time point for plotting
 
 modelsum<-summarySE(plc, measurevar = "temp",
-                    groupvars = c("date.time.j", "loc", "pos"),
+                    groupvars = c("date.time.j", "pos"),
                     na.rm = TRUE)
 
 
-modsum.plot<-ggplot(modelsum, aes(x=date.time.j, y=temp, group=interaction(loc, pos), color=loc))
-modsum.plot+geom_line(
+modsum.plot<-ggplot(modelsum, aes(x=date.time.j, y=temp, group=pos, color=pos))
+modsum.plot+geom_line()
+
+
+#Adding month column, to subset into smaller chunks for easier viewing
+modelsum$month<-ifelse(modelsum$date.time.j<152, "may",
+                       ifelse(modelsum$date.time.j>=152 & modelsum$date.time.j<182, "june",
+                              ifelse(modelsum$date.time.j>=182 & modelsum$date.time.j<213, "july",
+                                     ifelse(modelsum$date.time.j>=213 & modelsum$date.time.j<244, "august",
+                                            ifelse(modelsum$date.time.j>=244 & modelsum$date.time.j<274, "september", "october")))))
+
+View(modelsum)
+
+
+#creating a 2SD column, then adding and subtracting from mean 
+modelsum$sd2<-modelsum$sd*2
+
+modelsum$sd2.pos<-modelsum$sd2 + modelsum$temp
+modelsum$sd2.neg<-modelsum$temp - modelsum$sd2
+
+#subsetting to summer (june-august) and month for easier viewing 
+june.mod<-subset(modelsum, month=="june")
+july.mod<-subset(modelsum, month=="july")
+august.mod<-subset(modelsum, month=="august")
+smr.mod<-subset(modelsum, month!="september" & month!="october")
+
+
+
+#plotting summer with mean temp and 2SD for each position
+
+#creating dataframes with just +/-2SD to plot as separate lines
+smrpos.sd2.pos<-smr.mod[,c("date.time.j", "pos", "sd2.pos")]
+smrpos.sd2.neg<-smr.mod[,c("date.time.j", "pos", "sd2.neg")]
+
+#renaming sd2 columns to "temp" so it plots with aesthetics
+smrpos.sd2.pos<-rename(smrpos.sd2.pos, temp=sd2.pos)
+smrpos.sd2.neg<-rename(smrpos.sd2.neg, temp=sd2.neg)
+
+
+smrpos.mnsd.plot<-ggplot(smr.mod, aes(x=date.time.j, y=temp))
+smrpos.mnsd.plot+geom_line(color="black"
+)+geom_line(data=smrpos.sd2.neg, aes(x=date.time.j, y=temp),
+            color="blue"
+)+geom_line(data=smrpos.sd2.pos, aes(x=date.time.j, y=temp),
+            color="red"
 )+facet_wrap(~pos, dir="v")
+
+
+#------------------------
+
+#looking at maximum mean temp per day by maximum 2SD per day, by position on plant to see if it differs
+
+#Find daily maximum mean--high mean temp for each day
+##also highest SD for each day
+
+#copy date.time.j column so that I can separate into just date.j
+smr.mod$date.sep<-smr.mod$date.time.j
+
+#convert date.sep into character class
+smr.mod$date.sep<-as.character(smr.mod$date.sep)
+
+#separate date and time
+smr.mod <-smr.mod %>% separate(date.sep, into = c("date", "time"))
+smr.mod$time[is.na(smr.mod$time)]<-0
+
+#convert date back to numeric
+smr.mod$date<-as.numeric(smr.mod$date)
+
+
+#find the highest model mean temperature for each day (grouped by date, selects top row in each group)
+dmaxmn.pos <- smr.mod %>% group_by(date, pos) %>% top_n(1, temp)
+
+#find the higest model SD2
+dsdmn.pos <- smr.mod %>% group_by(date, pos) %>% top_n(1, sd2)
+
+#dsdmn has 1 less row for someunknown reason--giving it a dummy row to make it match dmaxmn
+dsdmn.pos[277,]<-NA
+
+#make column in daily max mean data set with daily max SD2
+dmaxmn.pos$max.sd2<-dsdmn.pos$sd2
+
+
+#plot daily max SD2 against daily max means
+
+smrpos.sdmnmax.plot<-ggplot(dmaxmn.pos, aes(x=temp, y=max.sd2, group=pos, color=pos))
+smrpos.sdmnmax.plot+geom_point(
+)+geom_smooth(method=lm)
+
 
 
 #-----------------------
@@ -305,6 +390,15 @@ maxsddate.plot<-ggplot(dmaxmn, aes(x=date, y=max.sd2))
 maxsddate.plot+geom_point(
 )+geom_line()
 
+
+#subset to just summer months
+smr.dmaxmn<-subset(dmaxmn, month!="september" & month!="october")
+
+#plot daily max SD2 against daily max means
+
+smr.sdmnmax.plot<-ggplot(smr.dmaxmn, aes(x=temp, y=max.sd2))
+smr.sdmnmax.plot+geom_point(
+)+geom_smooth(method=lm)
 
 #----------------------
 
